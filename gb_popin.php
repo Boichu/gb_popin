@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name: GB TODOS
- * Description: Gestion des clients et des todos.
+ * Plugin Name: GB popin
+ * Description: Gestion des clients et des popin.
  * Version: 1.0
  * Author: Gaétan Boishue
  */
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
 
 // Activation du plugin : création des tables
 function gb_popin_activation() {
-    require_once plugin_dir_path(__FILE__) . 'includes/gb-todos-install.php';
+    require_once plugin_dir_path(__FILE__) . 'includes/gb-popin-install.php';
     gb_popin_install();
 }
 register_activation_hook(__FILE__, 'gb_popin_activation');
@@ -26,16 +26,13 @@ register_deactivation_hook(__FILE__, 'gb_popin_deactivation');
 
 // Inclure les fichiers nécessaires
 function gb_popin_init() {
-    require_once plugin_dir_path(__FILE__) . 'includes/gb-todos-functions.php';
+    require_once plugin_dir_path(__FILE__) . 'includes/gb-popin-functions.php';
     // Vérifier si on est dans l'admin pour inclure les fichiers de gestion des clients
     if (is_admin()) {
-        require_once plugin_dir_path(__FILE__) . 'includes/gb-todos-clients-functions.php';
-        require_once plugin_dir_path(__FILE__) . 'includes/gb-todos-todos-functions.php';
+        require_once plugin_dir_path(__FILE__) . 'includes/gb-popin-popin-functions.php';
     }
 }
 add_action('init', 'gb_popin_init');
-
-
 
 function load_select2() {
     // Charger jQuery
@@ -53,8 +50,8 @@ function load_select2() {
     // Passer l'URL AJAX à notre script
     wp_localize_script('my-autocomplete-script', 'myAutocomplete', array('ajaxurl' => admin_url('admin-ajax.php')));
 
-    wp_enqueue_script('gb-todos-ajax', plugin_dir_url(__FILE__) . 'assets/js/todos.js', array('jquery'), null, true);
-    wp_localize_script('gb-todos-ajax', 'gbTodosAjax', array('ajaxurl' => admin_url('admin-ajax.php')));
+    wp_enqueue_script('gb-popin-ajax', plugin_dir_url(__FILE__) . 'assets/js/popin.js', array('jquery'), null, true);
+    wp_localize_script('gb-popin-ajax', 'gbpopinAjax', array('ajaxurl' => admin_url('admin-ajax.php')));
 
 }
 add_action('admin_enqueue_scripts', 'load_select2');
