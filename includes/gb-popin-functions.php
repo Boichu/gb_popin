@@ -42,6 +42,11 @@ function gb_display_popin()
 
 function should_display_popin($close_delay, $order_delay)
 {
+    // Vérifier si la pop-up est active
+    $active = get_option('gb_popin_active');
+    if (!$active) {
+        return false; // Ne pas afficher la pop-up si elle n'est pas active
+    }
     // Vérifier si le cookie de fermeture existe et est encore valide
     if (isset($_COOKIE['gb_popin_closed'])) {
         $close_time = intval($_COOKIE['gb_popin_closed']);
