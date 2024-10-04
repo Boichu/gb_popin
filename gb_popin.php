@@ -2,7 +2,7 @@
 /*
 Plugin Name: GB Popin
 Plugin URI: https://github.com/Boichu/gb_popin
-Description: Description de votre plugin.
+Description: Gestion d'une popin de bienvenue légère
 Version: 1.0.0
 Author: Votre Nom
 Author URI: https://votre-site.com
