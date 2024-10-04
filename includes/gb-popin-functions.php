@@ -24,10 +24,32 @@ function gb_display_popin()
         </div>
         <script type="text/javascript">
             document.addEventListener('DOMContentLoaded', function () {
-                setTimeout(function () {
-                    document.getElementById('gb-popin-overlay').style.display = 'block';
-                    document.getElementById('gb-popin').style.display = 'block';
-                }, <?php echo intval($display_time) * 1000; ?>);
+                function getCookie(name) {
+                    let value = "; " + document.cookie;
+                    let parts = value.split("; " + name + "=");
+                    if (parts.length === 2) return parts.pop().split(";").shift();
+                }
+
+                function shouldDisplayPopin(closeDelay) {
+                    let closeTime = getCookie('gb_popin_closed');
+                    if (closeTime) {
+                        closeTime = parseInt(closeTime);
+                        let currentTime = Math.floor(Date.now() / 1000);
+                        let closeDelaySeconds = closeDelay * 24 * 60 * 60; // Convertir les jours en secondes
+
+                        if ((currentTime - closeTime) < closeDelaySeconds) {
+                            return false; // Ne pas afficher la pop-up si le délai de fermeture n'est pas écoulé
+                        }
+                    }
+                    return true; // Afficher la pop-up si aucun des délais n'est en cours
+                }
+
+                if (shouldDisplayPopin(<?php echo intval($close_delay); ?>)) {
+                    setTimeout(function () {
+                        document.getElementById('gb-popin-overlay').style.display = 'block';
+                        document.getElementById('gb-popin').style.display = 'block';
+                    }, <?php echo intval($display_time) * 1000; ?>);
+                }
 
                 document.getElementById('gb-popin-overlay').addEventListener('click', function () {
                     document.getElementById('gb-popin-overlay').style.display = 'none';
@@ -48,7 +70,7 @@ function should_display_popin($close_delay, $order_delay)
         return false; // Ne pas afficher la pop-up si elle n'est pas active
     }
     // Vérifier si le cookie de fermeture existe et est encore valide
-    if (isset($_COOKIE['gb_popin_closed'])) {
+    /*if (isset($_COOKIE['gb_popin_closed'])) {
         $close_time = intval($_COOKIE['gb_popin_closed']);
         $current_time = time();
         $close_delay_seconds = intval($close_delay) * 24 * 60 * 60; // Convertir les jours en secondes
@@ -56,7 +78,7 @@ function should_display_popin($close_delay, $order_delay)
         if (($current_time - $close_time) < $close_delay_seconds) {
             return false; // Ne pas afficher la pop-up si le délai de fermeture n'est pas écoulé
         }
-    }
+    }*/
 
     // Vérifier si le cookie de commande existe et est encore valide
     // Vérifier la dernière commande de l'utilisateur
