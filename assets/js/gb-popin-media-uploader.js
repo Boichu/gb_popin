@@ -1,7 +1,10 @@
 jQuery(document).ready(function($) {
-    var mediaUploader;
+    
 
-    $('#upload-button').on('click', function(e) {
+    $('.upload-button').on('click', function(e) {
+        console.log('click upload');
+        var mediaUploader;
+        var thos = this;
         e.preventDefault();
         // If the media uploader instance exists, reopen it.
         if (mediaUploader) {
@@ -10,7 +13,7 @@ jQuery(document).ready(function($) {
         }
         // Create a new media uploader instance.
         mediaUploader = wp.media.frames.file_frame = wp.media({
-            title: 'Select Portrait Image',
+            title: 'Select Image',
             button: {
                 text: 'Select Image'
             },
@@ -20,7 +23,10 @@ jQuery(document).ready(function($) {
         // When an image is selected, run a callback.
         mediaUploader.on('select', function() {
             var attachment = mediaUploader.state().get('selection').first().toJSON();
-            $('#image-url').val(attachment.url);
+            $(thos).parent().find('.upload-selected').val(attachment.url);
+            $(thos).parent().find('.champ_hidden').val(attachment.id);
+            $(thos).parent().find('.upload-image').attr('src', attachment.url).show();
+            mediaUploader.close();
         });
 
         // Open the uploader dialog.

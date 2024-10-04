@@ -16,8 +16,6 @@ Pour la version tablette, je ne sais pas ce qui serait le mieux entre les deux f
 * Les variables à définir sont :
 * - L'image format portrait
 * - l'image format paysage
-* - Le bouton de fermeture
-* - Le bouton de validation
 * - Le lien de redirection
 * - Le temps d'affichage
 * - Le temps de non-affichage si le client ferme la popup
@@ -44,14 +42,13 @@ function gb_popin_register_settings()
 {
     // Définir des valeurs par défaut pour les options
     $default_options = array(
+        'gb_popin_active' => '',
         'gb_popin_portrait_image' => '',
         'gb_popin_landscape_image' => '',
-        'gb_popin_close_button' => '',
-        'gb_popin_validate_button' => '',
-        'gb_popin_redirect_link' => '',
-        'gb_popin_display_time' => '',
-        'gb_popin_close_delay' => '',
-        'gb_popin_order_delay' => ''
+        'gb_popin_redirect_link' => '/',
+        'gb_popin_display_time' => '3',
+        'gb_popin_close_delay' => '2',
+        'gb_popin_order_delay' => '5'
     );
 
     // Initialiser les options avec des valeurs par défaut si elles ne sont pas définies
@@ -61,10 +58,9 @@ function gb_popin_register_settings()
         }
     }
 
-    register_setting('gb_popin_options_group', 'gb_popin_text');
-    register_setting('gb_popin_options_group', 'gb_popin_title');
-    register_setting('gb_popin_options_group', 'gb_popin_close_button');
-    register_setting('gb_popin_options_group', 'gb_popin_validate_button');
+    register_setting('gb_popin_options_group', 'gb_popin_active');
+    register_setting('gb_popin_options_group', 'gb_popin_portrait_image');
+    register_setting('gb_popin_options_group', 'gb_popin_landscape_image');
     register_setting('gb_popin_options_group', 'gb_popin_redirect_link');
     register_setting('gb_popin_options_group', 'gb_popin_display_time');
     register_setting('gb_popin_options_group', 'gb_popin_close_delay');
@@ -80,89 +76,41 @@ function gb_popin_settings_page()
         <form method="post" action="options.php">
             <?php settings_fields('gb_popin_options_group'); ?>
             <?php do_settings_sections('gb_popin_options_group'); ?>
-            <script>
-                jQuery(document).ready(function($) {
-                    var mediaUploader;
-
-                    $('#gb_popin_portrait_image_button').click(function(e) {
-                        e.preventDefault();
-                        if (mediaUploader) {
-                            mediaUploader.open();
-                            return;
-                        }
-                        mediaUploader = wp.media.frames.file_frame = wp.media({
-                            title: 'Select Portrait Image',
-                            button: {
-                                text: 'Select Image'
-                            },
-                            multiple: false
-                        });
-                        mediaUploader.on('select', function() {
-                            var attachment = mediaUploader.state().get('selection').first().toJSON();
-                            $('#gb_popin_portrait_image').val(attachment.url);
-                        });
-                        mediaUploader.open();
-                    });
-
-                    $('#gb_popin_landscape_image_button').click(function(e) {
-                        e.preventDefault();
-                        if (mediaUploader) {
-                            mediaUploader.open();
-                            return;
-                        }
-                        mediaUploader = wp.media.frames.file_frame = wp.media({
-                            title: 'Select Landscape Image',
-                            button: {
-                                text: 'Select Image'
-                            },
-                            multiple: false
-                        });
-                        mediaUploader.on('select', function() {
-                            var attachment = mediaUploader.state().get('selection').first().toJSON();
-                            $('#gb_popin_landscape_image').val(attachment.url);
-                        });
-                        mediaUploader.open();
-                    });
-                });
-            </script>
             <table class="form-table">
+                <tr valign="top">
+                    <th scope="row">Active</th>
+                    <td><input type="checkbox" name="gb_popin_active" value="1" <?php checked(1, get_option('gb_popin_active'), true); ?> /></td>
+                </tr>
                 <tr valign="top">
                     <th scope="row">Portrait Image</th>
                     <td>
-                        <input type="text" id="gb_popin_portrait_image" name="gb_popin_portrait_image" value="<?php echo esc_attr(get_option('gb_popin_portrait_image')); ?>" />
-                        <button type="button" class="button" id="upload-button" >Select Image</button>
+                        <input type="hidden" class="champ_hidden" id="gb_popin_portrait_image" name="gb_popin_portrait_image" value="<?php echo esc_attr(get_option('gb_popin_portrait_image')); ?>" />
+                        <img class="upload-image" id="gb_popin_portrait_image_preview" src="<?php echo wp_get_attachment_url(get_option('gb_popin_portrait_image')); ?>" style="max-width: 150px; display: <?php echo get_option('gb_popin_portrait_image') ? 'block' : 'none'; ?>;" />
+                        <button type="button" class="button upload-button" id="gb_popin_portrait_image_button" >Select Image</button>
                     </td>
                 </tr>
                 <tr valign="top">
                     <th scope="row">Landscape Image</th>
                     <td>
-                        <input type="text" id="gb_popin_landscape_image" name="gb_popin_landscape_image" value="<?php echo esc_attr(get_option('gb_popin_landscape_image')); ?>" />
-                        <button type="button" class="button" id="upload-button" >Select Image</button>
+                        <input type="hidden" class="champ_hidden" id="gb_popin_landscape_image" name="gb_popin_landscape_image" value="<?php echo esc_attr(get_option('gb_popin_landscape_image')); ?>" />
+                        <img class="upload-image" id="gb_popin_landscape_image_preview" src="<?php echo wp_get_attachment_url(get_option('gb_popin_landscape_image')); ?>" style="max-width: 150px; display: <?php echo get_option('gb_popin_landscape_image') ? 'block' : 'none'; ?>;" />
+                        <button type="button" class="button upload-button" id="gb_popin_landscape_image_button" >Select Image</button>
                     </td>
                 </tr>
-
                 <tr valign="top">
-                    <th scope="row">Close Button Text</th>
-                    <td><input type="text" name="gb_popin_close_button" value="<?php echo esc_attr(get_option('gb_popin_close_button')); ?>" /></td>
-                </tr>
-                <tr valign="top">
-                    <th scope="row">Validate Button Text</th>
-                    <td><input type="text" name="gb_popin_validate_button" value="<?php echo esc_attr(get_option('gb_popin_validate_button')); ?>" /></td>
-                </tr>
-                <tr valign="top">
-                    <th scope="row">Redirect Link</th>
+                    <th scope="row">Lien</th>
                     <td><input type="text" name="gb_popin_redirect_link" value="<?php echo esc_attr(get_option('gb_popin_redirect_link')); ?>" /></td>
                 </tr>
                 <tr valign="top">
-                    <th scope="row">Display Time</th>
+                    <th scope="row">Secondes avant l'affichage</th>
                     <td><input type="text" name="gb_popin_display_time" value="<?php echo esc_attr(get_option('gb_popin_display_time')); ?>" /></td>
                 </tr>
                 <tr valign="top">
-                    <th scope="row">Close Delay</th>
+                    <th scope="row">Nombre de jours avant réapparition</th>
                     <td><input type="text" name="gb_popin_close_delay" value="<?php echo esc_attr(get_option('gb_popin_close_delay')); ?>" /></td>
                 </tr>
                 <tr valign="top">
-                    <th scope="row">Order Delay</th>
+                    <th scope="row">Nombre de jours après une commande</th>
                     <td><input type="text" name="gb_popin_order_delay" value="<?php echo esc_attr(get_option('gb_popin_order_delay')); ?>" /></td>
                 </tr>
             </table>
@@ -173,12 +121,9 @@ function gb_popin_settings_page()
 
 }
 
-
-
-
 function gb_popin_enqueue_media_uploader() {
     wp_enqueue_media();
-    wp_enqueue_script('gb-popin-media-uploader', plugin_dir_url(__FILE__) . 'js/gb-popin-media-uploader.js', array('jquery'), null, true);
+    wp_enqueue_script('gb-popin-media-uploader', plugin_dir_url(__FILE__) . '../assets/js/gb-popin-media-uploader.js', array('jquery'), null, true);
 }
 add_action('admin_enqueue_scripts', 'gb_popin_enqueue_media_uploader');
 

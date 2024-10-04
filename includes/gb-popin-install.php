@@ -15,17 +15,6 @@ function gb_popin_install()
         * Pour le format de la pop-up, si celui des images ne t’arrange pas ou ne semble pas convenir on peut bien sûr les revoir. Je peux également faire des exports d’une meilleure définition. Pour la version tablette, je ne sais pas ce qui serait le mieux entre les deux formats. Tu me diras :)
         * 
         */
-    global $wpdb;
-    $table_name = $wpdb->prefix . 'gb_popin';
-    $charset_collate = $wpdb->get_charset_collate();
-    //il faut que la table existe
-    $sql = "CREATE TABLE $table_name (
-        id mediumint(9) NOT NULL AUTO_INCREMENT,
-        time datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
-        PRIMARY KEY  (id)
-    ) $charset_collate;";
 
-    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-    dbDelta($sql);
 
 }
