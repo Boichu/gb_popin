@@ -16,7 +16,7 @@ function gb_display_popin()
         ?>
         <div id="gb-popin-overlay"></div>
         <div id="gb-popin" style="display:none;">
-            <a href="<?php echo esc_url($redirect_link); ?>" target="_blank">
+            <a href="<?php echo esc_url($redirect_link); ?>">
                 <?php echo wp_get_attachment_image($portrait_image, 'full', false, array('class' => 'portrait', 'loading' => 'lazy')); ?>
                 <?php echo wp_get_attachment_image($landscape_image, 'full', false, array('class' => 'landscape', 'loading' => 'lazy')); ?>
             </a>
