@@ -20,8 +20,15 @@ if (!defined('ABSPATH')) {
 function gb_popin_activation() {
     require_once plugin_dir_path(__FILE__) . 'includes/gb-popin-install.php';
     gb_popin_install();
+
+    // Forcer WordPress à vérifier les mises à jour des plugins
+    set_site_transient('update_plugins', null);
+    wp_update_plugins();
 }
 register_activation_hook(__FILE__, 'gb_popin_activation');
+
+
+
 
 // Désactivation du plugin : nettoyage optionnel
 function gb_popin_deactivation() {
@@ -127,3 +134,27 @@ function gb_popin_plugin_info($res, $action, $args) {
     return $res;
 }
 add_filter('plugins_api', 'gb_popin_plugin_info', 10, 3);
+
+
+
+
+// Planifier un événement pour vérifier les mises à jour des plugins toutes les 12 heures
+if (!wp_next_scheduled('gb_popin_check_for_updates')) {
+    wp_schedule_event(time(), 'twicedaily', 'gb_popin_check_for_updates');
+}
+
+// Ajouter l'action pour vérifier les mises à jour des plugins
+add_action('gb_popin_check_for_updates', 'gb_popin_force_update_check');
+
+function gb_popin_force_update_check() {
+    // Forcer WordPress à vérifier les mises à jour des plugins
+    set_site_transient('update_plugins', null);
+    wp_update_plugins();
+}
+
+// Nettoyer l'événement planifié lors de la désactivation du plugin
+register_deactivation_hook(__FILE__, 'gb_popin_deactivate');
+
+function gb_popin_deactivate() {
+    wp_clear_scheduled_hook('gb_popin_check_for_updates');
+}
