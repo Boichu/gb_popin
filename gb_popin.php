@@ -1,23 +1,15 @@
 <?php
-/**
- * Plugin Name: GB popin
- * Description: Gestion d'une popin de bienvenue
- * Version: 1.0
- * Author: Gaétan Boishue
- * 
- * 
- * 
- * C’est une pop-up de bienvenue qui présente la boutique et nos offres commerciales. Au niveau des caractéristiques d’affichage, voici ce que j’aimerais :
- * - Affichage après 2 secondes de navigation, sur la page d’arrivée du visiteur (peu importe la page)
- * - Quand elle s’affiche, ça assombrit un peu la page en arrière plan (comme tu as fait sur la pop-up du tunnel de commande)
- * - Si le client passe commande, la pop-up ne lui sera pas remontrée pendant 5 jours
- * - Si le client ferme la pop-up, elle ne lui sera pas remontrée pendant 2 jours ; pour la fermeture de la pop-up, on peut mettre une croix dans le coin supérieur droit (une petite croix blanche par exemple). Sur la version bureau, j’aimerais bien qu’elle se ferme également si on clique en dehors de l’image.
- * - Elle sera montrée à tous les visiteurs, même ceux qui sont loggués. Si on peut exclure les administrateurs ce serait top mais sinon c’est pas grave :)
- * 
- * Pour le format de la pop-up, si celui des images ne t’arrange pas ou ne semble pas convenir on peut bien sûr les revoir. Je peux également faire des exports d’une meilleure définition. Pour la version tablette, je ne sais pas ce qui serait le mieux entre les deux formats. Tu me diras :)
- * 
- * 
- */
+/*
+Plugin Name: GB Popin
+Plugin URI: https://github.com/Boichu/gb_popin
+Description: Description de votre plugin.
+Version: 1.0.0
+Author: Votre Nom
+Author URI: https://votre-site.com
+License: GPL2
+GitHub Plugin URI: https://github.com/Boichu/gb_popin
+GitHub Branch: main
+*/
 
 // Sécurité pour éviter l'exécution directe du fichier PHP
 if (!defined('ABSPATH')) {
@@ -71,3 +63,67 @@ add_action('admin_enqueue_scripts', 'load_select2');
 
 
 
+
+
+function gb_popin_check_for_updates($transient) {
+    if (empty($transient->checked)) {
+        return $transient;
+    }
+
+    $plugin_slug = 'gb-popin';
+    $github_api_url = 'https://api.github.com/repos/votre-utilisateur/gb-popin/releases/latest';
+
+    $response = wp_remote_get($github_api_url);
+    if (is_wp_error($response)) {
+        return $transient;
+    }
+
+    $release = json_decode(wp_remote_retrieve_body($response));
+    if (version_compare($release->tag_name, $transient->checked[$plugin_slug . '/' . $plugin_slug . '.php'], '>')) {
+        $transient->response[$plugin_slug . '/' . $plugin_slug . '.php'] = (object) array(
+            'new_version' => $release->tag_name,
+            'package' => $release->zipball_url,
+            'slug' => $plugin_slug,
+        );
+    }
+
+    return $transient;
+}
+add_filter('pre_set_site_transient_update_plugins', 'gb_popin_check_for_updates');
+
+
+
+
+function gb_popin_plugin_info($res, $action, $args) {
+    if ($action !== 'plugin_information') {
+        return $res;
+    }
+
+    $plugin_slug = 'gb-popin';
+    if ($args->slug !== $plugin_slug) {
+        return $res;
+    }
+
+    $github_api_url = 'https://github.com/Boichu/gb_popin';
+
+    $response = wp_remote_get($github_api_url);
+    if (is_wp_error($response)) {
+        return $res;
+    }
+
+    $repo = json_decode(wp_remote_retrieve_body($response));
+    $res = (object) array(
+        'name' => $repo->name,
+        'slug' => $plugin_slug,
+        'version' => $repo->tag_name,
+        'author' => '<a href="' . $repo->owner->html_url . '">' . $repo->owner->login . '</a>',
+        'homepage' => $repo->html_url,
+        'download_link' => $repo->zipball_url,
+        'sections' => array(
+            'description' => $repo->description,
+        ),
+    );
+
+    return $res;
+}
+add_filter('plugins_api', 'gb_popin_plugin_info', 10, 3);
