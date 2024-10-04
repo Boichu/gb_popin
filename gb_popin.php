@@ -3,7 +3,7 @@
 Plugin Name: GB Popin
 Plugin URI: https://github.com/Boichu/gb_popin
 Description: Gestion d'une popin de bienvenue légère avec une image en paysage et une autre en portrait, un lien de redirection, un temps d'affichage, un temps de non-affichage si le client ferme la popin et un temps de non-affichage si le client passe commande.
-Version: 1.0.2
+Version: 1.0.3
 Author: Gaétan Boishue
 Author URI: https://www.pagespeedlab.com/
 License: GPL2
