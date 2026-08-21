@@ -1,5 +1,7 @@
-#gb-popin-overlay {
-    display: none;
+// GB Popin — styles du front.
+// Le script insère les éléments au moment de l'affichage : pas de display:none ici.
+
+.gb-popin-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -11,46 +13,51 @@
     cursor: pointer;
 }
 
-#gb-popin {
-    display: none;
+.gb-popin {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 1000;
-    //background-color: rgba(0, 0, 0, 0.8);
-    //padding: 20px;
-    //border-radius: 10px;
     text-align: center;
     max-width: 90%;
     max-height: 90%;
 
-    img {
+    &__link {
+        display: block;
+        cursor: pointer;
+    }
+
+    &__image {
         max-width: 100%;
         height: auto;
         display: none;
     }
 
-    // Afficher l'image portrait par défaut
-    .portrait {
+    // Affichage portrait par défaut...
+    &__image--portrait {
         display: block;
     }
 
-    // Utiliser une media query pour afficher l'image paysage en mode paysage
+    // ...et paysage quand l'écran est en paysage.
     @media (orientation: landscape) {
-        .portrait {
+        &__image--portrait {
             display: none;
         }
-        .landscape {
+
+        &__image--landscape {
             display: block;
         }
     }
-    .close-button {
+
+    &__close {
         position: absolute;
         top: 10px;
         right: 10px;
         width: 30px;
         height: 30px;
+        padding: 0;
+        border: 0;
         background-color: #b2b0b0;
         border-radius: 50%;
         display: flex;
@@ -59,7 +66,8 @@
         cursor: pointer;
         z-index: 1001;
 
-        &:before, &:after {
+        &:before,
+        &:after {
             content: '';
             position: absolute;
             width: 2px;
@@ -75,4 +83,10 @@
             transform: rotate(-45deg);
         }
     }
+}
+
+// Une seule image renseignée : elle sert dans les deux orientations,
+// sinon la media query la ferait disparaître.
+.gb-popin--single .gb-popin__image {
+    display: block;
 }

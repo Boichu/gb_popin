@@ -2,8 +2,8 @@
 /*
 Plugin Name: GB Popin
 Plugin URI: https://github.com/Boichu/gb_popin
-Description: Gestion d'une popin de bienvenue légère avec une image en paysage et une autre en portrait, un lien de redirection, un temps d'affichage, un temps de non-affichage si le client ferme la popin et un temps de non-affichage si le client passe commande.
-Version: 1.0.5
+Description: Gestion de plusieurs popins : images portrait et paysage, lien de redirection, délais d'affichage et de réapparition, période de diffusion, ciblage par visiteur et par URL (expressions régulières). La première popin éligible s'affiche.
+Version: 1.1.0
 Author: Gaétan Boishue
 Author URI: https://www.pagespeedlab.com/
 License: GPL2
@@ -16,7 +16,14 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// Activation du plugin : création des tables
+define('GB_POPIN_FILE', __FILE__);
+define('GB_POPIN_VERSION', '1.1.0');
+
+require_once plugin_dir_path(__FILE__) . 'includes/gb-popin-data.php';
+require_once plugin_dir_path(__FILE__) . 'includes/gb-popin-url-index.php';
+require_once plugin_dir_path(__FILE__) . 'includes/gb-popin-functions.php';
+
+// Activation du plugin
 function gb_popin_activation() {
     require_once plugin_dir_path(__FILE__) . 'includes/gb-popin-install.php';
     gb_popin_install();
@@ -27,47 +34,13 @@ function gb_popin_activation() {
 }
 register_activation_hook(__FILE__, 'gb_popin_activation');
 
-
-
-
-// Désactivation du plugin : nettoyage optionnel
-function gb_popin_deactivation() {
-    // Code pour nettoyer si nécessaire
-}
-register_deactivation_hook(__FILE__, 'gb_popin_deactivation');
-
-// Inclure les fichiers nécessaires
+// Charger l'administration uniquement là où elle sert.
 function gb_popin_init() {
-    require_once plugin_dir_path(__FILE__) . 'includes/gb-popin-functions.php';
-    // Vérifier si on est dans l'admin pour inclure les fichiers de gestion des clients
     if (is_admin()) {
         require_once plugin_dir_path(__FILE__) . 'includes/gb-popin-admin-functions.php';
     }
 }
 add_action('init', 'gb_popin_init');
-
-function load_select2() {
-    // Charger jQuery
-    wp_enqueue_script('jquery');
-
-    // Charger Select2
-    wp_enqueue_script('select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js', array('jquery'), '4.0.13', true);
-
-    // Charger le CSS de Select2
-    wp_enqueue_style('select2-css', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css', array(), '4.0.13', 'all');
-
-
-    wp_enqueue_script('jquery-ui-autocomplete');
-    wp_enqueue_script('my-autocomplete-script', plugin_dir_url(__FILE__)  . 'assets/js/autocomplete.js', array('jquery', 'jquery-ui-autocomplete'), null, true);
-    // Passer l'URL AJAX à notre script
-    wp_localize_script('my-autocomplete-script', 'myAutocomplete', array('ajaxurl' => admin_url('admin-ajax.php')));
-
-    wp_enqueue_script('gb-popin-ajax', plugin_dir_url(__FILE__) . 'assets/js/gb_popin.js', array('jquery'), null, true);
-    wp_localize_script('gb-popin-ajax', 'gbpopinAjax', array('ajaxurl' => admin_url('admin-ajax.php')));
-
-}
-add_action('admin_enqueue_scripts', 'load_select2');
-
 
 
 
@@ -157,4 +130,5 @@ register_deactivation_hook(__FILE__, 'gb_popin_deactivate');
 
 function gb_popin_deactivate() {
     wp_clear_scheduled_hook('gb_popin_check_for_updates');
+    gb_popin_flush_url_index();
 }

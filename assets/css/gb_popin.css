@@ -1,5 +1,4 @@
-#gb-popin-overlay {
-  display: none;
+.gb-popin-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -10,8 +9,7 @@
   z-index: 999;
   cursor: pointer; }
 
-#gb-popin {
-  display: none;
+.gb-popin {
   position: fixed;
   top: 50%;
   left: 50%;
@@ -20,23 +18,28 @@
   text-align: center;
   max-width: 90%;
   max-height: 90%; }
-  #gb-popin img {
+  .gb-popin__link {
+    display: block;
+    cursor: pointer; }
+  .gb-popin__image {
     max-width: 100%;
     height: auto;
     display: none; }
-  #gb-popin .portrait {
+  .gb-popin__image--portrait {
     display: block; }
   @media (orientation: landscape) {
-    #gb-popin .portrait {
+    .gb-popin__image--portrait {
       display: none; }
-    #gb-popin .landscape {
+    .gb-popin__image--landscape {
       display: block; } }
-  #gb-popin .close-button {
+  .gb-popin__close {
     position: absolute;
     top: 10px;
     right: 10px;
     width: 30px;
     height: 30px;
+    padding: 0;
+    border: 0;
     background-color: #b2b0b0;
     border-radius: 50%;
     display: flex;
@@ -44,15 +47,16 @@
     justify-content: center;
     cursor: pointer;
     z-index: 1001; }
-    #gb-popin .close-button:before, #gb-popin .close-button:after {
+    .gb-popin__close:before, .gb-popin__close:after {
       content: '';
       position: absolute;
       width: 2px;
       height: 16px;
       background-color: black; }
-    #gb-popin .close-button:before {
+    .gb-popin__close:before {
       transform: rotate(45deg); }
-    #gb-popin .close-button:after {
+    .gb-popin__close:after {
       transform: rotate(-45deg); }
 
-/*# sourceMappingURL=gb_popin.css.map */
+.gb-popin--single .gb-popin__image {
+  display: block; }

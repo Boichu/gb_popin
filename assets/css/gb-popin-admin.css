@@ -1,0 +1,153 @@
+/* GB Popin — écran d'administration */
+
+.gb-popin-admin .gb-popin-item {
+  background: #fff;
+  border: 1px solid #c3c4c7;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.gb-popin-admin .gb-popin-item__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+}
+
+.gb-popin-admin .gb-popin-item__handle {
+  cursor: grab;
+  color: #8c8f94;
+}
+
+.gb-popin-admin .gb-popin-item__active {
+  white-space: nowrap;
+}
+
+.gb-popin-admin .gb-popin-item__title {
+  font-weight: 600;
+}
+
+.gb-popin-admin .gb-popin-item__summary {
+  color: #646970;
+  font-size: 12px;
+  flex: 1;
+}
+
+.gb-popin-admin .gb-popin-item__toggle .dashicons {
+  transition: transform 0.15s ease;
+}
+
+.gb-popin-admin .gb-popin-item.is-open .gb-popin-item__toggle .dashicons {
+  transform: rotate(180deg);
+}
+
+.gb-popin-admin .gb-popin-item__delete {
+  color: #b32d2e;
+}
+
+.gb-popin-admin .gb-popin-item__body {
+  display: none;
+  border-top: 1px solid #f0f0f1;
+  padding: 0 12px;
+}
+
+.gb-popin-admin .gb-popin-item.is-open .gb-popin-item__body {
+  display: block;
+}
+
+.gb-popin-admin .gb-popin-item__placeholder {
+  border: 2px dashed #c3c4c7;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  height: 46px;
+}
+
+/* Champs */
+
+.gb-popin-admin .gb-popin-delays label {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.gb-popin-admin .gb-popin-delays input {
+  width: 80px;
+}
+
+.gb-popin-admin .gb-popin-inline {
+  margin-left: 16px;
+}
+
+.gb-popin-admin .gb-popin-image__preview {
+  display: block;
+  max-width: 150px;
+  height: auto;
+  margin-bottom: 6px;
+  border: 1px solid #dcdcde;
+}
+
+/* Règles d'URL */
+
+.gb-popin-admin .gb-popin-rules {
+  margin-top: 10px;
+}
+
+.gb-popin-admin .gb-popin-rule {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.gb-popin-admin .gb-popin-rule__count {
+  font-size: 12px;
+  color: #2271b1;
+  min-width: 120px;
+}
+
+.gb-popin-admin .gb-popin-rule__count.is-empty {
+  color: #996800;
+}
+
+.gb-popin-admin .gb-popin-rule__count.is-error {
+  color: #b32d2e;
+}
+
+.gb-popin-admin .gb-popin-rule__remove {
+  color: #b32d2e;
+  font-size: 18px;
+  text-decoration: none;
+}
+
+.gb-popin-admin .gb-popin-rule__list {
+  flex-basis: 100%;
+  margin: 0 0 4px 0;
+  padding: 8px 12px;
+  background: #f6f7f7;
+  border-left: 3px solid #c3c4c7;
+  font-family: Consolas, Monaco, monospace;
+  font-size: 12px;
+}
+
+.gb-popin-admin .gb-popin-rule__more {
+  color: #646970;
+  font-style: italic;
+}
+
+/* Mini-doc */
+
+.gb-popin-admin .gb-popin-help {
+  margin-top: 28px;
+  padding-top: 12px;
+  border-top: 1px solid #dcdcde;
+  max-width: 900px;
+}
+
+.gb-popin-admin .gb-popin-help__table {
+  margin-bottom: 16px;
+}
+
+.gb-popin-admin .gb-popin-empty {
+  color: #646970;
+  font-style: italic;
+}

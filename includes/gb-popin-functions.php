@@ -1,113 +1,124 @@
 <?php
+/**
+ * Affichage des popins côté visiteur.
+ *
+ * Le serveur ne choisit pas la popin : il publie la liste de celles qui sont
+ * éligibles pour cette page, dans l'ordre de priorité, et le navigateur retient
+ * la première que le visiteur n'a pas déjà fermée. Ce partage est imposé par le
+ * cache de page (gb-cache) : le HTML anonyme est commun à tous les visiteurs,
+ * il ne peut donc pas dépendre de leurs cookies.
+ */
 
-function gb_display_popin()
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+/**
+ * Charge la feuille de style et le script du front, avec la configuration.
+ */
+function gb_popin_enqueue_front()
 {
-    // Récupérer les options depuis le backoffice
-    $portrait_image = get_option('gb_popin_portrait_image');
-    $landscape_image = get_option('gb_popin_landscape_image');
-    $redirect_link = get_option('gb_popin_redirect_link');
-    $display_time = get_option('gb_popin_display_time');
-    $close_delay = get_option('gb_popin_close_delay');
-    $order_delay = get_option('gb_popin_order_delay');
-
-    // Vérifier les critères pour afficher la pop-up
-    if (should_display_popin($close_delay, $order_delay)) 
-    {
-        ?>
-        <div id="gb-popin-overlay"></div>
-        <div id="gb-popin" style="display:none;">
-            <a href="<?php echo ($redirect_link)? esc_url($redirect_link) : "Javascript:document.getElementById('gb-popin-overlay').click()"; ?>" id="gb-popin-link">
-                <?php echo wp_get_attachment_image($portrait_image, 'full', false, array('class' => 'portrait', 'loading' => 'lazy')); ?>
-                <?php echo wp_get_attachment_image($landscape_image, 'full', false, array('class' => 'landscape', 'loading' => 'lazy')); ?>
-            </a>
-            <button class="close-button" onclick="document.getElementById('gb-popin-overlay').click()"></button>
-        </div>
-        <script type="text/javascript">
-            document.addEventListener('DOMContentLoaded', function () {
-                function getCookie(name) {
-                    let value = "; " + document.cookie;
-                    let parts = value.split("; " + name + "=");
-                    if (parts.length === 2) return parts.pop().split(";").shift();
-                }
-
-                function shouldDisplayPopin(closeDelay) {
-                    let closeTime = getCookie('gb_popin_closed');
-                    if (closeTime) {
-                        closeTime = parseInt(closeTime);
-                        let currentTime = Math.floor(Date.now() / 1000);
-                        let closeDelaySeconds = closeDelay * 24 * 60 * 60; // Convertir les jours en secondes
-
-                        if ((currentTime - closeTime) < closeDelaySeconds) {
-                            return false; // Ne pas afficher la pop-up si le délai de fermeture n'est pas écoulé
-                        }
-                    }
-                    return true; // Afficher la pop-up si aucun des délais n'est en cours
-                }
-
-                if (shouldDisplayPopin(<?php echo intval($close_delay); ?>)) {
-                    setTimeout(function () {
-                        document.getElementById('gb-popin-overlay').style.display = 'block';
-                        document.getElementById('gb-popin').style.display = 'block';
-                    }, <?php echo intval($display_time) * 1000; ?>);
-                }
-                //gérer le clic sur le lien pour simiuler le clic sur l'overlay 
-                document.getElementById('gb-popin-link').addEventListener('click', function (e) {
-                    document.getElementById('gb-popin-overlay').click(); // Simuler le clic sur l'overlay
-                });
-                // Gérer le clic sur l'overlay pour fermer la pop-up
-                document.getElementById('gb-popin-overlay').addEventListener('click', function () {
-                    document.getElementById('gb-popin-overlay').style.display = 'none';
-                    document.getElementById('gb-popin').style.display = 'none';
-                    document.cookie = "gb_popin_closed=" + Math.floor(Date.now() / 1000) + "; path=/; max-age=" + (<?php echo intval($close_delay) * 24 * 60 * 60; ?>);
-                });
-            });
-        </script>
-        <?php
+    if (is_admin()) {
+        return;
     }
-}
 
-function should_display_popin($close_delay, $order_delay)
+    $eligible = gb_popin_get_eligible();
+    if (empty($eligible)) {
+        return;
+    }
+
+    $config = array();
+    foreach ($eligible as $popin) {
+        $portrait  = gb_popin_image_html($popin['portrait_image'], 'portrait');
+        $landscape = gb_popin_image_html($popin['landscape_image'], 'landscape');
+
+        if ($portrait === '' && $landscape === '') {
+            continue;
+        }
+
+        $config[] = array(
+            'id'         => (int) $popin['id'],
+            'title'      => $popin['title'],
+            // Les images partent en HTML : tant que le script ne les insère pas
+            // dans la page, le navigateur ne les télécharge pas.
+            'portrait'   => $portrait,
+            'landscape'  => $landscape,
+            'link'       => $popin['redirect_link'],
+            'delay'      => (int) $popin['display_time'],
+            'closeDelay' => (int) $popin['close_delay'],
+            'legacy'     => (int) $popin['legacy_cookie'],
+            // Une seule image : elle doit servir dans les deux orientations.
+            'single'     => ($portrait === '' || $landscape === '') ? 1 : 0,
+            // Filet de sécurité si une page en cache survit à la date de fin.
+            'start'      => gb_popin_date_to_timestamp($popin['date_start'], false),
+            'end'        => gb_popin_date_to_timestamp($popin['date_end'], true),
+        );
+    }
+
+    if (empty($config)) {
+        return;
+    }
+
+    wp_enqueue_style(
+        'gb_popin_style',
+        plugins_url('assets/css/gb_popin.css', GB_POPIN_FILE),
+        array(),
+        GB_POPIN_VERSION
+    );
+
+    wp_enqueue_script(
+        'gb-popin-front',
+        plugins_url('assets/js/gb-popin-front.js', GB_POPIN_FILE),
+        array(),
+        GB_POPIN_VERSION,
+        true
+    );
+
+    wp_add_inline_script(
+        'gb-popin-front',
+        'window.gbPopinData = ' . wp_json_encode(array('popins' => $config)) . ';',
+        'before'
+    );
+}
+add_action('wp_enqueue_scripts', 'gb_popin_enqueue_front');
+
+/**
+ * Balise <img> d'une image de popin, chaîne vide si l'image n'existe plus.
+ *
+ * @param int    $attachment_id
+ * @param string $class
+ * @return string
+ */
+function gb_popin_image_html($attachment_id, $class)
 {
-    // Vérifier si la pop-up est active
-    $active = get_option('gb_popin_active');
-    if (!$active) {
-        return false; // Ne pas afficher la pop-up si elle n'est pas active
-    }
-    // Vérifier si le cookie de fermeture existe et est encore valide
-    /*if (isset($_COOKIE['gb_popin_closed'])) {
-        $close_time = intval($_COOKIE['gb_popin_closed']);
-        $current_time = time();
-        $close_delay_seconds = intval($close_delay) * 24 * 60 * 60; // Convertir les jours en secondes
-
-        if (($current_time - $close_time) < $close_delay_seconds) {
-            return false; // Ne pas afficher la pop-up si le délai de fermeture n'est pas écoulé
-        }
-    }*/
-
-    // Vérifier si le cookie de commande existe et est encore valide
-    // Vérifier la dernière commande de l'utilisateur
-    if (is_user_logged_in()) {
-        $user_id = get_current_user_id();
-        $last_order = function_exists('wc_get_customer_last_order') ? wc_get_customer_last_order($user_id) : null;
-
-        if ($last_order) {
-            $order_time = strtotime($last_order->get_date_created());
-            $current_time = time();
-            $order_delay_seconds = intval($order_delay) * 24 * 60 * 60; // Convertir les jours en secondes
-
-            if (($current_time - $order_time) < $order_delay_seconds) {
-                return false; // Ne pas afficher la pop-up si le délai de commande n'est pas écoulé
-            }
-        }
+    $attachment_id = (int) $attachment_id;
+    if ($attachment_id < 1) {
+        return '';
     }
 
-    return true; // Afficher la pop-up si aucun des délais n'est en cours
+    $html = wp_get_attachment_image($attachment_id, 'full', false, array(
+        'class'    => 'gb-popin__image gb-popin__image--' . $class,
+        'decoding' => 'async',
+    ));
+
+    return $html ? $html : '';
 }
 
-// Ajouter l'action pour afficher la pop-up dans le front-end
-add_action('wp_footer', 'gb_display_popin');
+/**
+ * Convertit une date de réglage (Y-m-d, fuseau du site) en timestamp UTC.
+ *
+ * @param string $date
+ * @param bool   $end_of_day true pour viser la fin de la journée.
+ * @return int|null
+ */
+function gb_popin_date_to_timestamp($date, $end_of_day)
+{
+    if (!is_string($date) || $date === '') {
+        return null;
+    }
 
-function gb_enqueue_popin_scripts() {
-    wp_enqueue_style('gb_popin_style', plugins_url('../assets/css/gb_popin.css', __FILE__));
+    $time      = $end_of_day ? ' 23:59:59' : ' 00:00:00';
+    $timestamp = get_gmt_from_date($date . $time, 'U');
+
+    return $timestamp ? (int) $timestamp : null;
 }
-add_action('wp_enqueue_scripts', 'gb_enqueue_popin_scripts');
