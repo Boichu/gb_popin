@@ -3,7 +3,7 @@
 Plugin Name: GB Popin
 Plugin URI: https://github.com/Boichu/gb_popin
 Description: Gestion d'une popin de bienvenue légère avec une image en paysage et une autre en portrait, un lien de redirection, un temps d'affichage, un temps de non-affichage si le client ferme la popin et un temps de non-affichage si le client passe commande.
-Version: 1.0.3
+Version: 1.0.5
 Author: Gaétan Boishue
 Author URI: https://www.pagespeedlab.com/
 License: GPL2
@@ -78,7 +78,7 @@ function gb_popin_check_for_updates($transient) {
     }
 
     $plugin_slug = 'gb-popin';
-    $github_api_url = 'https://api.github.com/repos/votre-utilisateur/gb-popin/releases/latest';
+    $github_api_url = 'https://api.github.com/repos/Boichu/gb-popin/releases/latest';
 
     $response = wp_remote_get($github_api_url);
     if (is_wp_error($response)) {
@@ -86,7 +86,7 @@ function gb_popin_check_for_updates($transient) {
     }
 
     $release = json_decode(wp_remote_retrieve_body($response));
-    if (version_compare($release->tag_name, $transient->checked[$plugin_slug . '/' . $plugin_slug . '.php'], '>')) {
+    if (is_object($release) && isset($release->tag_name) && isset($transient->checked[$plugin_slug . '/' . $plugin_slug . '.php']) && version_compare($release->tag_name, $transient->checked[$plugin_slug . '/' . $plugin_slug . '.php'], '>')) {
         $transient->response[$plugin_slug . '/' . $plugin_slug . '.php'] = (object) array(
             'new_version' => $release->tag_name,
             'package' => $release->zipball_url,

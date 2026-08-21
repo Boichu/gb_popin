@@ -16,7 +16,7 @@ function gb_display_popin()
         ?>
         <div id="gb-popin-overlay"></div>
         <div id="gb-popin" style="display:none;">
-            <a href="<?php echo esc_url($redirect_link); ?>">
+            <a href="<?php echo ($redirect_link)? esc_url($redirect_link) : "Javascript:document.getElementById('gb-popin-overlay').click()"; ?>" id="gb-popin-link">
                 <?php echo wp_get_attachment_image($portrait_image, 'full', false, array('class' => 'portrait', 'loading' => 'lazy')); ?>
                 <?php echo wp_get_attachment_image($landscape_image, 'full', false, array('class' => 'landscape', 'loading' => 'lazy')); ?>
             </a>
@@ -50,7 +50,11 @@ function gb_display_popin()
                         document.getElementById('gb-popin').style.display = 'block';
                     }, <?php echo intval($display_time) * 1000; ?>);
                 }
-
+                //gérer le clic sur le lien pour simiuler le clic sur l'overlay 
+                document.getElementById('gb-popin-link').addEventListener('click', function (e) {
+                    document.getElementById('gb-popin-overlay').click(); // Simuler le clic sur l'overlay
+                });
+                // Gérer le clic sur l'overlay pour fermer la pop-up
                 document.getElementById('gb-popin-overlay').addEventListener('click', function () {
                     document.getElementById('gb-popin-overlay').style.display = 'none';
                     document.getElementById('gb-popin').style.display = 'none';
